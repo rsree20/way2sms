@@ -9,6 +9,8 @@
 <body>
 <h3 align="center">SMS Application</h3> 
 <form action="sendSMS" method="post">
+<font color="green">${successMsg}</font>
+<font color="red">${errorMsg}</font>
 <table>
 <tr>
 <td>Mobile Number</td><td>:</td><td><input type="text" name="mobile"/></td>

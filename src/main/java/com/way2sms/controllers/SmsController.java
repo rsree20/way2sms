@@ -1,22 +1,24 @@
 package com.way2sms.controllers;
 
-import javax.swing.text.html.FormSubmitEvent.MethodType;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
+import com.google.gson.Gson;
+import com.way2sms.pojo.SmsResponse;
+
 @Controller
 public class SmsController {
 
 	@RequestMapping(value = "/sendSMS", method = RequestMethod.POST)
-	public String sendSms(@RequestParam("mobile") String mobile, @RequestParam("text") String textMessage) {
+	public String sendSms(Model model, @RequestParam("mobile") String mobile, @RequestParam("text") String textMessage) {
 		System.out.println(mobile);
 		System.out.println(textMessage);
 		// Hit sms gateway api from here to send sms
@@ -38,9 +40,23 @@ public class SmsController {
 		
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> result = restTemplate.exchange(requestUrl.toString(), HttpMethod.POST, entity, String.class);
-		String response = result.getBody();
-		System.out.println(response);
+		
+		System.out.println("status code is : " + result.getStatusCode());
+		System.out.println("Response from sms gateway api : " + result.getBody());
+		String body = result.getBody();
 
+		Gson gson = new Gson();
+		SmsResponse smsResponse = gson.fromJson(body, SmsResponse.class);
+		
+		System.out.println(smsResponse.getErrorCode());
+		System.out.println(smsResponse.getErrorMessage());
+
+		if(smsResponse.getErrorCode().equals("000")) {
+			model.addAttribute("successMsg", "Your message sent successful!!");
+		} else {
+			model.addAttribute("errorMsg", smsResponse.getErrorMessage());			
+		}
+		
 		return "way2sms";
 	}
 }
